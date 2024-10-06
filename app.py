@@ -82,6 +82,13 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 server = app.server
 
+external_stylesheets = [
+    dbc.themes.BOOTSTRAP,
+    "https://use.fontawesome.com/releases/v5.8.1/css/all.css"  # Font Awesome CSS
+]
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+
+
 label_mapping = {
     'ticket_one_way_eur': 'Public Transport One Way Ticket Price',
     'monthly_pass_eur': 'Public Transport Monthly Pass',
@@ -162,7 +169,7 @@ def create_node_layout(node, prefix=''):
                     style={'marginLeft': '20px'}
                 )
             ],
-            label=html.Div(checkbox, style={'display': 'inline-block'}),
+            title=html.Div(checkbox, style={'display': 'inline-block'}),
             item_id=label
         )
     else:
@@ -179,10 +186,8 @@ def create_accordion(items):
     return dbc.Accordion(
         [create_node_layout(item) for item in items],
         flush=True,
-        always_open=True,
-        start_collapsed=True  # If you want items to start collapsed
+        always_open=True
     )
-
 
 
 
@@ -913,6 +918,10 @@ def update_ranking_table(population_value, selected_countries, selected_cities,
     # Return the ranked cities for the table
     return ranked_cities[['Rank', 'City', 'Country Name', 'Score'] + columns_to_include].to_dict('records')
 
+
+# Run the app
+if __name__ == "__main__":
+    app.run_server(debug=True, port=8057)
 
 # Run the app
 if __name__ == "__main__":

@@ -541,6 +541,9 @@ def update_map(population_value, selected_countries, selected_cities,
     population_min = 100_000 * population_value[0] if population_value[0] <= 5 else 1_000_000 * (population_value[0] - 5)
     population_max = 100_000 * population_value[1] if population_value[1] <= 5 else 1_000_000 * (population_value[1] - 5)
 
+    if population_value[1] == 12:
+        population_max = 20_000_000
+
     # Filter cities based on population range
     filtered_cities = cities[(cities['Population'] >= population_min) & (cities['Population'] <= population_max)].copy()
 

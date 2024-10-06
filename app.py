@@ -186,8 +186,8 @@ app.layout = html.Div([
         )
     ], style={
         'backgroundColor': '#e6f7ff',
-        'padding': '10px 0',
-        'marginLeft': '25%',  # Offset to prevent overlap with the sidebar
+        'padding': '15px 0',
+        'marginLeft': '30%',  # Offset to prevent overlap with the sidebar
     }),
 
     # Main Content: Sidebar and Main Panel
@@ -349,7 +349,7 @@ app.layout = html.Div([
 
         ], style={
             'padding': '20px',
-            'width': '25%',
+            'width': '30%',
             'backgroundColor': '#f0f0f0',  # Light grey background for the menu
             'boxSizing': 'border-box',
             'overflowY': 'auto',
@@ -409,8 +409,8 @@ app.layout = html.Div([
                 )
             ], style={'padding': '10px'}),
         ], style={
-            'marginLeft': '25%',  # Offset to match the sidebar
-            'width': '75%',       # Occupy the remaining width
+            'marginLeft': '30%',  # Offset to match the sidebar
+            'width': '70%',       # Occupy the remaining width
             'padding': '20px',
             'backgroundColor': '#e6f7ff',  # Light blue background for the main content
             'boxSizing': 'border-box'

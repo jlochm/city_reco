@@ -887,9 +887,7 @@ def update_ranking_table(population_value, selected_countries, selected_cities,
     return ranked_cities[['Rank', 'City', 'Country Name', 'Score'] + columns_to_include].to_dict('records')
 
 
-# Run the app
-if __name__ == "__main__":
-    app.run_server(debug=True, port=8057)
+
 
 # Run the app
 if __name__ == "__main__":

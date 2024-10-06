@@ -123,12 +123,6 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 server = app.server
 
-external_stylesheets = [
-    dbc.themes.BOOTSTRAP,
-    "https://use.fontawesome.com/releases/v5.8.1/css/all.css"  # Font Awesome CSS
-]
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-
 
 label_mapping = {
     'ticket_one_way_eur': 'Public Transport One Way Ticket Price',

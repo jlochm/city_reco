@@ -38,23 +38,6 @@ cities[columns_to_normalize] = cities[columns_to_normalize].div(cities["total_fb
 cities = cities.drop(index=20).reset_index(drop=True)
 
 # Define helper functions
-def dict_to_nested_list(data, path=()):
-    result = []
-    count = 1
-    for key, value in data.items():
-        current_path = path + (count,)
-        if isinstance(value, dict) and 'id' in value:
-            # If the value is a dictionary containing further nested categories, recurse
-            sub_list = dict_to_nested_list({k: v for k, v in value.items() if k != 'id'}, current_path)
-            result.append(((current_path, key), sub_list))
-        else:
-            # Append the current path and key as a tuple
-            result.append((current_path, key))
-        count += 1
-    return result
-
-
-# Flatten the nested interest categories into a list with level information
 def flatten_categories(data, level=0):
     flattened = []
     for key, value in data.items():
@@ -69,6 +52,64 @@ def flatten_categories(data, level=0):
 
 # Preprocess the interest categories for the dropdown
 flattened_categories = flatten_categories(interest_categories)
+
+# Build the hierarchy from the flattened list
+def build_hierarchy(flattened_categories):
+    root = []
+    stack = []
+    for name, level in flattened_categories:
+        node = {'label': name, 'children': [], 'level': level}
+        # Adjust the stack based on the current level
+        while len(stack) > level:
+            stack.pop()
+        if len(stack) == 0:
+            root.append(node)
+        else:
+            parent = stack[-1]
+            parent['children'].append(node)
+        stack.append(node)
+    return root
+
+# Adjusted create_node_layout function
+def create_node_layout(node, prefix=''):
+    label = node['label']
+    children = node['children']
+    level = node['level']
+    checkbox_id = {'type': 'fb-interest-checkbox', 'id': label}
+    checkbox = dbc.Checkbox(
+        id=checkbox_id,
+        label=label,
+        value=False,
+        style={'margin-left': f'{20 * level}px'}
+    )
+    if children:
+        # Create collapsible section using html.Details and html.Summary
+        return html.Div([
+            html.Details([
+                html.Summary(label, style={'fontWeight': 'bold', 'margin-left': f'{20 * level}px'}),
+                html.Div(checkbox),
+                html.Div(
+                    [create_node_layout(child) for child in children],
+                    style={'marginLeft': '20px'}
+                )
+            ])
+        ])
+    else:
+        # Return the checkbox for leaf nodes
+        return checkbox
+
+# Create the Accordion with recursive items
+def create_accordion(items):
+    return html.Div(
+        [create_node_layout(item) for item in items]
+    )
+
+# Build the hierarchy
+hierarchy = build_hierarchy(flattened_categories)
+
+
+
+
 
 
 

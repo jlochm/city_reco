@@ -1,7 +1,7 @@
 import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output, State, ALL
-import dash_table
+from dash import dash_table
 import plotly.express as px
 import json
 from sklearn.preprocessing import MinMaxScaler
@@ -127,67 +127,6 @@ satisfaction_vars = {
 label_mapping.update(satisfaction_vars)  # Merge satisfaction variable labels with existing labels
 
 
-
-
-
-
-
-# Function to build the hierarchical structure
-def build_hierarchy(flattened_categories):
-    root = []
-    stack = []
-    for name, level in flattened_categories:
-        node = {'label': name, 'children': [], 'level': level}
-        # Adjust the stack based on the current level
-        while len(stack) > level:
-            stack.pop()
-        if len(stack) == 0:
-            root.append(node)
-        else:
-            parent = stack[-1]
-            parent['children'].append(node)
-        stack.append(node)
-    return root
-
-def create_node_layout(node, prefix=''):
-    label = node['label']
-    children = node['children']
-    level = node['level']
-    # Use label as ID to match column names
-    checkbox_id = {'type': 'fb-interest-checkbox', 'id': label}
-    checkbox = dbc.Checkbox(
-        id=checkbox_id,
-        label=label,
-        value=False
-    )
-    if children:
-        # Create an AccordionItem for nodes with children
-        return dbc.AccordionItem(
-            [
-                html.Div(
-                    [create_node_layout(child) for child in children],
-                    style={'marginLeft': '20px'}
-                )
-            ],
-            title=html.Div(checkbox, style={'display': 'inline-block'}),
-            item_id=label
-        )
-    else:
-        # Return a checkbox for leaf nodes
-        return html.Div(checkbox, style={'marginLeft': f'{20 * level}px'})
-
-
-
-# Build the hierarchy from the flattened list
-hierarchy = build_hierarchy(flattened_categories)
-
-# Create the Accordion with recursive items
-def create_accordion(items):
-    return dbc.Accordion(
-        [create_node_layout(item) for item in items],
-        flush=True,
-        always_open=True
-    )
 
 
 
@@ -444,7 +383,7 @@ app.layout = html.Div([
     ], style={'display': 'flex', 'flexDirection': 'row'}),
 ])
 
-
+# Callbacks (same as your original code, adjusted if necessary)
 
 # Callback to update the city dropdown based on the selected country and population range
 @app.callback(
@@ -458,12 +397,11 @@ def update_city_dropdown(selected_countries, population_value):
 
     # Filter cities based on selected countries and population range
     filtered_cities = cities[(cities['Population'] >= population_min) & (cities['Population'] <= population_max)]
-    
+
     if selected_countries and 'All' not in selected_countries:
         filtered_cities = filtered_cities[filtered_cities['Country Name'].isin(selected_countries)]
-    
-    return [{'label': city, 'value': city} for city in filtered_cities['City']]
 
+    return [{'label': city, 'value': city} for city in filtered_cities['City']]
 
 # Callback to dynamically add cost variable dropdowns and sliders
 @app.callback(
@@ -477,6 +415,7 @@ def add_cost_dropdown(n_clicks, children, selected_vars):
         raise dash.exceptions.PreventUpdate
 
     # Filter out already selected variables
+    selected_vars = selected_vars or []
     available_vars = [{'label': label_mapping[var], 'value': var} for var in cost_vars if var not in selected_vars]
 
     if not available_vars:  # If no more variables are available, don't add new dropdowns
@@ -500,9 +439,6 @@ def add_cost_dropdown(n_clicks, children, selected_vars):
     children.append(new_element)
     return children
 
-
-
-
 # Callback to dynamically add satisfaction variable dropdowns and sliders
 @app.callback(
     Output('satisfaction-variable-dropdowns', 'children'),
@@ -515,6 +451,7 @@ def add_satisfaction_dropdown(n_clicks, children, selected_vars):
         raise dash.exceptions.PreventUpdate
 
     # Filter out already selected variables
+    selected_vars = selected_vars or []
     available_vars = [{'label': label_mapping[var], 'value': var} for var in satisfaction_vars if var not in selected_vars]
 
     if not available_vars:  # If no more variables are available, don't add new dropdowns
@@ -537,10 +474,6 @@ def add_satisfaction_dropdown(n_clicks, children, selected_vars):
     # Add the new dropdown and slider to the list of children
     children.append(new_element)
     return children
-
-
-
-
 
 
 

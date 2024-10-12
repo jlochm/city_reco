@@ -452,7 +452,7 @@ app.layout = html.Div([
             ], style={'marginTop': '20px'}),
         ], style={
             'padding': '30px',
-            'width': '25%',
+            'width': '30%',
             'backgroundColor': '#f8f9fa',  # Slightly lighter grey for better contrast
             'boxSizing': 'border-box',
             'overflowY': 'auto',

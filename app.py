@@ -478,7 +478,7 @@ app.layout = html.Div([
                     target='map-tooltip',
                     placement='right',
                 ),
-                dcc.Graph(id="city-map", style={'height': '600px'}),
+                dcc.Graph(id="city-map", style={'height': '600px'},config={'scrollZoom': False}),
             ], style={'padding': '20px', 'backgroundColor': '#fff', 'borderRadius': '5px', 'boxShadow': '0 0 10px rgba(0,0,0,0.1)'}),
 
             html.Br(),
@@ -553,7 +553,8 @@ app.layout = html.Div([
 def update_city_dropdown(selected_countries, population_value):
     # Convert slider value into population ranges
     population_min = 100_000 * population_value[0] if population_value[0] <= 5 else 1_000_000 * (population_value[0] - 5)
-    population_max = 100_000 * population_value[1] if population_value[1] <= 5 else 1_000_000 * (population_value[1] - 5)
+    population_max = (100_000 * population_value[1] if population_value[1] <= 5 else (1_000_000 * (population_value[1] - 5) if population_value[1] < 11 else 20_000_000))
+
 
     # Filter cities based on selected countries and population range
     filtered_cities = cities[(cities['Population'] >= population_min) & (cities['Population'] <= population_max)]
@@ -899,7 +900,8 @@ def update_ranking_table(population_value, selected_countries, selected_cities,
 
     # Convert slider value into population ranges
     population_min = 100_000 * population_value[0] if population_value[0] <= 5 else 1_000_000 * (population_value[0] - 5)
-    population_max = 100_000 * population_value[1] if population_value[1] <= 5 else 1_000_000 * (population_value[1] - 5)
+    population_max = (100_000 * population_value[1] if population_value[1] <= 5 else (1_000_000 * (population_value[1] - 5) if population_value[1] < 11 else 20_000_000))
+
 
     # Filter cities based on population range
     filtered_cities = cities[(cities['Population'] >= population_min) & (cities['Population'] <= population_max)]
@@ -1042,7 +1044,6 @@ app.clientside_callback(
     Output('url', 'href'),
     Input('reset-button', 'n_clicks')
 )
-
 
 
 

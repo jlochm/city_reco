@@ -136,8 +136,6 @@ satisfaction_vars = {
 label_mapping.update(satisfaction_vars) 
 
 
-
-# Layout
 # Layout
 app.layout = html.Div([
     # Location component for client-side callbacks
@@ -206,14 +204,14 @@ app.layout = html.Div([
                     target='population-tooltip',
                     placement='right',
                 ),
-                html.P("From 1 to 20 million", style={'fontSize': '14px', 'marginTop': '5px'}),
+                html.P("From 0 to 20M+", style={'fontSize': '14px', 'marginTop': '5px'}),
                 dcc.RangeSlider(
                     id='population-slider',
-                    min=1,
-                    max=20,
-                    marks={i: f'{i}M' for i in range(1, 21, 2)},
-                    value=[1, 20],
-                    step=1
+                    min=0,
+                    max=11,
+                    marks={i: f'{i * 100}k' if i <= 5 else (f'{(i - 5) * 1}M' if i < 11 else '20M+') for i in range(12)},
+                    value=[0, 11],
+                    step=None
                 ),
             ], style={'marginBottom': '30px'}),
 
@@ -229,14 +227,14 @@ app.layout = html.Div([
                     })
                 ], style={'fontSize': '16px', 'fontWeight': 'bold'}),
                 dbc.Tooltip(
-                    "Select one or more countries to include cities only from those countries.",
+                    "Select one or more countries to include cities only from those countries. Select 'All Countries' to include all.",
                     target='country-tooltip',
                     placement='right',
                 ),
                 dcc.Dropdown(
                     id='country-dropdown',
-                    options=[{'label': country, 'value': country} for country in cities['Country Name'].unique()],
-                    value=[],  # Changed from 'All' to empty list for better handling
+                    options=[{'label': 'All Countries', 'value': 'All'}] + [{'label': country, 'value': country} for country in cities['Country Name'].unique()],
+                    value=['All'],  # Default to 'All Countries'
                     multi=True,
                     placeholder="Select Country"
                 ),
@@ -478,7 +476,7 @@ app.layout = html.Div([
                     target='map-tooltip',
                     placement='right',
                 ),
-                dcc.Graph(id="city-map", style={'height': '600px'},config={'scrollZoom': False}),
+                dcc.Graph(id="city-map", style={'height': '600px'}, config={'scrollZoom': False}),
             ], style={'padding': '20px', 'backgroundColor': '#fff', 'borderRadius': '5px', 'boxShadow': '0 0 10px rgba(0,0,0,0.1)'}),
 
             html.Br(),
@@ -543,8 +541,6 @@ app.layout = html.Div([
 ])
 
 
-
-
 # Callback to update the city dropdown based on the selected country and population range
 @app.callback(
     Output('city-dropdown', 'options'),
@@ -553,8 +549,7 @@ app.layout = html.Div([
 def update_city_dropdown(selected_countries, population_value):
     # Convert slider value into population ranges
     population_min = 100_000 * population_value[0] if population_value[0] <= 5 else 1_000_000 * (population_value[0] - 5)
-    population_max = (100_000 * population_value[1] if population_value[1] <= 5 else (1_000_000 * (population_value[1] - 5) if population_value[1] < 11 else 20_000_000))
-
+    population_max = 100_000 * population_value[1] if population_value[1] <= 5 else 1_000_000 * (population_value[1] - 5)
 
     # Filter cities based on selected countries and population range
     filtered_cities = cities[(cities['Population'] >= population_min) & (cities['Population'] <= population_max)]
@@ -563,6 +558,7 @@ def update_city_dropdown(selected_countries, population_value):
         filtered_cities = filtered_cities[filtered_cities['Country Name'].isin(selected_countries)]
 
     return [{'label': city, 'value': city} for city in filtered_cities['City']]
+
 
 # Callback to dynamically add cost variable dropdowns and sliders
 @app.callback(
@@ -600,6 +596,7 @@ def add_cost_dropdown(n_clicks, children, selected_vars):
     children.append(new_element)
     return children
 
+
 # Callback to dynamically add satisfaction variable dropdowns and sliders
 @app.callback(
     Output('satisfaction-variable-dropdowns', 'children'),
@@ -635,6 +632,7 @@ def add_satisfaction_dropdown(n_clicks, children, selected_vars):
     # Add the new dropdown and slider to the list of children
     children.append(new_element)
     return children
+
 
 @app.callback(
     Output("city-map", "figure"),
@@ -683,14 +681,14 @@ def update_map(population_value, selected_countries, selected_cities,
         return go.Figure()  # Return empty figure if no cities
 
     # Handle selected cost of living and satisfaction variables
-    selected_variables = [var for var in selected_variables if var is not None]
+    selected_cost_vars = [var for var in selected_variables if var is not None]
     selected_satisfaction_vars = [var for var in selected_satisfaction_vars if var is not None]
-    variable_weights = variable_weights[:len(selected_variables)]
+    variable_weights = variable_weights[:len(selected_cost_vars)]
     satisfaction_weights = satisfaction_weights[:len(selected_satisfaction_vars)]
 
     # Add income variable if selected
     if income_variable is not None:
-        selected_variables.append(income_variable)
+        selected_cost_vars.append(income_variable)
         variable_weights.append(income_weight)
 
     # Prepare normalization for variables (min-max scaling)
@@ -713,7 +711,7 @@ def update_map(population_value, selected_countries, selected_cities,
     ]
 
     # Normalize and weight cost of living variables
-    for idx, var in enumerate(selected_variables):
+    for idx, var in enumerate(selected_cost_vars):
         if var in filtered_cities.columns:
             data = filtered_cities[[var]].astype(float)
             if var in reverse_vars:
@@ -770,14 +768,6 @@ def update_map(population_value, selected_countries, selected_cities,
     else:
         filtered_cities['Score'] = 0  # Set score to 0 if no variables are selected
 
-    # Handle case where all scores are zero
-    if (filtered_cities['Score'] > 0).any():
-        min_score = filtered_cities['Score'][filtered_cities['Score'] > 0].min()
-        max_score = filtered_cities['Score'].max()
-    else:
-        min_score = 0
-        max_score = 1  # Avoid division by zero
-
     # Create the background trace for the outline
     background_trace = go.Scattermapbox(
         lat=filtered_cities['Latitude'],
@@ -801,8 +791,8 @@ def update_map(population_value, selected_countries, selected_cities,
             size=11,
             color=filtered_cities['Score'],
             colorscale='RdYlGn',
-            cmin=min_score,
-            cmax=max_score,
+            cmin=filtered_cities['Score'].min() if (filtered_cities['Score'] > 0).any() else 0,
+            cmax=filtered_cities['Score'].max() if (filtered_cities['Score'] > 0).any() else 1,
             colorbar=dict(
                 title='Score',
                 x=0.95,  # Adjust to position the color scale inside the map
@@ -836,6 +826,7 @@ def update_map(population_value, selected_countries, selected_cities,
 
     return fig
 
+
 # Callback to update the ranking table columns
 @app.callback(
     Output('ranking-table', 'columns'),
@@ -852,7 +843,7 @@ def update_table_columns(selected_variables, selected_satisfaction_vars, income_
     base_columns = [
         {'name': 'Rank', 'id': 'Rank'},
         {'name': 'City', 'id': 'City'},
-        {'name': 'Country Name', 'id': 'Country Name'},
+        {'name': 'Country', 'id': 'Country Name'},
         {'name': 'Score', 'id': 'Score'}
     ]
     
@@ -861,7 +852,15 @@ def update_table_columns(selected_variables, selected_satisfaction_vars, income_
     if income_variable is not None:
         all_selected_vars.append(income_variable)
     
-    variable_columns = [{'name': label_mapping.get(var, var), 'id': var} for var in all_selected_vars]
+    # Prepare variable columns
+    variable_columns = []
+    for var in all_selected_vars:
+        if var in satisfaction_vars:
+            display_name = label_mapping.get(var, var)
+            variable_columns.append({'name': display_name, 'id': display_name})
+        else:
+            display_name = label_mapping.get(var, var)
+            variable_columns.append({'name': display_name, 'id': var})
     
     # Determine if any FB interest categories are selected
     selected_fb_interests = [fb_interest_ids[i]['id'] for i, val in enumerate(fb_interest_values) if val]
@@ -870,6 +869,8 @@ def update_table_columns(selected_variables, selected_satisfaction_vars, income_
 
     return base_columns + variable_columns
 
+
+# Callback to update the ranking table data
 @app.callback(
     Output('ranking-table', 'data'),
     [
@@ -900,8 +901,7 @@ def update_ranking_table(population_value, selected_countries, selected_cities,
 
     # Convert slider value into population ranges
     population_min = 100_000 * population_value[0] if population_value[0] <= 5 else 1_000_000 * (population_value[0] - 5)
-    population_max = (100_000 * population_value[1] if population_value[1] <= 5 else (1_000_000 * (population_value[1] - 5) if population_value[1] < 11 else 20_000_000))
-
+    population_max = 100_000 * population_value[1] if population_value[1] <= 5 else 1_000_000 * (population_value[1] - 5)
 
     # Filter cities based on population range
     filtered_cities = cities[(cities['Population'] >= population_min) & (cities['Population'] <= population_max)]
@@ -918,14 +918,14 @@ def update_ranking_table(population_value, selected_countries, selected_cities,
         return []  # Prevents crash if there are no cities
 
     # Handle selected cost of living and satisfaction variables
-    selected_variables = [var for var in selected_variables if var is not None]
+    selected_cost_vars = [var for var in selected_variables if var is not None]
     selected_satisfaction_vars = [var for var in selected_satisfaction_vars if var is not None]
-    variable_weights = variable_weights[:len(selected_variables)]
+    variable_weights = variable_weights[:len(selected_cost_vars)]
     satisfaction_weights = satisfaction_weights[:len(selected_satisfaction_vars)]
 
     # Add income variable if selected
     if income_variable is not None:
-        selected_variables.append(income_variable)
+        selected_cost_vars.append(income_variable)
         variable_weights.append(income_weight)
 
     # Prepare normalization for variables (min-max scaling)
@@ -947,22 +947,30 @@ def update_ranking_table(population_value, selected_countries, selected_cities,
             'mobile_phone_plan_eur'
     ]
 
-    # Normalize cost of living variables
-    for idx, var in enumerate(selected_variables):
+    # Normalize and weight cost of living variables
+    for idx, var in enumerate(selected_cost_vars):
         if var in filtered_cities.columns:
+            data = filtered_cities[[var]].astype(float)
             if var in reverse_vars:
-                normalized = 1 - scaler.fit_transform(filtered_cities[[var]])
+                normalized = 1 - scaler.fit_transform(data)
             else:
-                normalized = scaler.fit_transform(filtered_cities[[var]])
+                normalized = scaler.fit_transform(data)
             weight = variable_weights[idx] if idx < len(variable_weights) else 1
             weighted_scores.append(normalized * weight)
+        else:
+            # If variable not in columns, append zeros
+            weighted_scores.append(np.zeros((len(filtered_cities), 1)))
 
-    # Normalize satisfaction variables
+    # Normalize and weight satisfaction variables
     for idx, var in enumerate(selected_satisfaction_vars):
         if var in filtered_cities.columns:
-            normalized = scaler.fit_transform(filtered_cities[[var]])
-            satisfaction_weight = satisfaction_weights[idx] if idx < len(satisfaction_weights) else 1
-            weighted_scores.append(normalized * satisfaction_weight)
+            data = filtered_cities[[var]].astype(float)
+            normalized = scaler.fit_transform(data)
+            weight = satisfaction_weights[idx] if idx < len(satisfaction_weights) else 1
+            weighted_scores.append(normalized * weight)
+        else:
+            # If variable not in columns, append zeros
+            weighted_scores.append(np.zeros((len(filtered_cities), 1)))
 
     # Process FB interest categories
     selected_fb_interests = [fb_interest_ids[i]['id'] for i, val in enumerate(fb_interest_values) if val]
@@ -977,10 +985,6 @@ def update_ranking_table(population_value, selected_countries, selected_cities,
         print("FB Interest Columns in Data:", fb_interest_columns)
         
         if fb_interest_columns:
-            # Calculate average of selected categories for each city
-            filtered_cities['Social Fit Display'] = filtered_cities[fb_interest_columns].mean(axis=1) * 100
-            filtered_cities['Social Fit Display'] = filtered_cities['Social Fit Display'].round(2).astype(str) + '%'
-
             # For scoring, sum the selected columns
             filtered_cities['Social Fit'] = filtered_cities[fb_interest_columns].sum(axis=1)
             # Normalize the 'Social Fit' score from 0 to 1
@@ -988,47 +992,70 @@ def update_ranking_table(population_value, selected_countries, selected_cities,
             # Multiply by the social fit weight
             weighted_scores.append(filtered_cities[['Social Fit']] * social_fit_weight)
         else:
-            # No matching columns found
             filtered_cities['Social Fit'] = 0
-            filtered_cities['Social Fit Display'] = '0%'
     else:
         filtered_cities['Social Fit'] = 0
-        filtered_cities['Social Fit Display'] = '0%'
 
     # Calculate final score only if there are any selected variables
     if weighted_scores:
-        total_weighted_scores = sum(weighted_scores)
-        filtered_cities['Score'] = total_weighted_scores.round(3)
+        total_weighted_scores = np.sum(weighted_scores, axis=0)
+        # Sum across all variables to get a single score per city
+        filtered_cities['Score'] = total_weighted_scores.sum(axis=1)
+        filtered_cities['Score'] = filtered_cities['Score'].round(3)
     else:
         filtered_cities['Score'] = 0  # Set score to 0 if no variables are selected
 
+    # Assign quartile-based labels to satisfaction variables
+    for var in selected_satisfaction_vars:
+        if var in filtered_cities.columns:
+            # Calculate quartiles
+            quartiles = filtered_cities[var].quantile([0.25, 0.5, 0.75]).values
+            # Assign labels based on quartiles
+            filtered_cities[var + '_label'] = pd.cut(
+                filtered_cities[var],
+                bins=[-np.inf, quartiles[0], quartiles[1], quartiles[2], np.inf],
+                labels=["bad", "medium", "good", "very good"]
+            )
+
     # Combine original values with scores and rank
-    columns_to_include = selected_variables + selected_satisfaction_vars
+    columns_to_include = selected_cost_vars + selected_satisfaction_vars
     if 'Social Fit Display' in filtered_cities.columns:
         columns_to_include.append('Social Fit Display')
 
-    ranked_cities = filtered_cities[['City', 'Country Name', 'Score']].join(filtered_cities[columns_to_include])
+    # Create a copy for ranking to avoid SettingWithCopyWarning
+    ranked_cities = filtered_cities[['City', 'Country Name', 'Score']].copy()
 
-    ranked_cities['Rank'] = ranked_cities['Score'].rank(method='min', ascending=False)
-    ranked_cities = ranked_cities.sort_values(by='Rank', ascending=True)
+    # Add selected cost of living variables
+    for var in selected_cost_vars:
+        if var in filtered_cities.columns:
+            if var == 'net_salary_avg_eur':
+                # Keep it as numerical
+                ranked_cities[var] = filtered_cities[var]
+            else:
+                ranked_cities[var] = filtered_cities[var].apply(lambda x: f"{x:.2f}€")
 
-    # Add "€" to cost-related variables for display
-    for var in selected_variables:
-        if var in reverse_vars:  # Only for cost-related variables
-            ranked_cities[var] = ranked_cities[var].apply(lambda x: f"{x:.2f}€")
-
-    # Add "€" to net salary variable for display
-    if income_variable == 'net_salary_avg_eur':
-        if income_variable in ranked_cities.columns:
-            ranked_cities[income_variable] = ranked_cities[income_variable].apply(lambda x: f"{x:.2f}€")
-
-    # Round satisfaction variables to two decimal places
+    # Add selected satisfaction variables with labels
     for var in selected_satisfaction_vars:
-        if var in ranked_cities.columns:
-            ranked_cities[var] = ranked_cities[var].round(2)
+        if var + '_label' in filtered_cities.columns:
+            display_name = label_mapping.get(var, var)
+            ranked_cities[display_name] = filtered_cities[var + '_label']
+
+    # Add Social Fit Display if applicable
+    if 'Social Fit Display' in filtered_cities.columns:
+        ranked_cities['Social Fit Display'] = filtered_cities['Social Fit Display']
+
+    # Add Rank based on Score
+    ranked_cities['Rank'] = ranked_cities['Score'].rank(method='min', ascending=False)
+    ranked_cities = ranked_cities.sort_values(by='Rank').head(20)  # Ensure top 20
+
+    # No need to format net_salary_avg_eur again, as it's already handled above
 
     # Return the ranked cities for the table
-    return ranked_cities[['Rank', 'City', 'Country Name', 'Score'] + columns_to_include].to_dict('records')
+    return ranked_cities[['Rank', 'City', 'Country Name', 'Score'] + 
+                        [var for var in selected_cost_vars if var != 'net_salary_avg_eur'] + 
+                        ([income_variable] if income_variable else []) + 
+                        [label_mapping.get(var, var) for var in selected_satisfaction_vars] + 
+                        (['Social Fit Display'] if 'Social Fit Display' in ranked_cities.columns else [])].to_dict('records')
 
 
 # Client-Side Callback to Reload the Page on Reset Button Click
@@ -1044,7 +1071,6 @@ app.clientside_callback(
     Output('url', 'href'),
     Input('reset-button', 'n_clicks')
 )
-
 
 
 # Run the app

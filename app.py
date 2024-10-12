@@ -172,7 +172,7 @@ app.layout = html.Div([
     ], style={
         'backgroundColor': '#e6f7ff',
         'padding': '20px 0',
-        'marginLeft': '25%',  # Offset to prevent overlap with the sidebar
+        'marginLeft': '30%',  # Offset to prevent overlap with the sidebar
         'borderBottom': '2px solid #ccc'
     }),
 
@@ -425,6 +425,12 @@ app.layout = html.Div([
                 ),
             ], style={'marginBottom': '40px'}),
 
+            html.Br(),
+            html.Br(),
+            html.Br(),
+            html.Br(),
+
+            
             # Reset Button at the Very Bottom
             html.Div([
                 html.Button(
@@ -528,8 +534,8 @@ app.layout = html.Div([
                 )
             ], style={'padding': '20px', 'backgroundColor': '#fff', 'borderRadius': '5px', 'boxShadow': '0 0 10px rgba(0,0,0,0.1)'}),
         ], style={
-            'marginLeft': '25%',  # Offset to match the sidebar
-            'width': '75%',       # Occupy the remaining width
+            'marginLeft': '30%',  # Offset to match the sidebar
+            'width': '70%',       # Occupy the remaining width
             'padding': '30px',
             'backgroundColor': '#f1f3f5',  # Light blue-grey background for the main content
             'boxSizing': 'border-box'

@@ -1,0 +1,276 @@
+{
+    "Arts and Crafts": {
+        "Painting": {
+            "id": "6003142974961"
+        },
+        "Drawing": {
+            "id": "6003780025252"
+        },
+        "Sculpture": {
+            "id": "6003717247746"
+        },
+        "Pottery": {
+            "id": "6003221185267"
+        },
+        "Woodworking": {
+            "id": "6003335221357"
+        },
+        "Photography": {
+            "id": "6003899195666"
+        },
+        "Street Art": {
+            "id": "6003211024030"
+        }
+    },
+    "Music and Performance": {
+        "Playing Musical Instruments": {
+            "id": "6003068853982"
+        },
+        "Singing": {
+            "id": "6002997799844"
+        },
+        "Dance": {
+            "id": "6003423342191"
+        },
+        "Opera": {
+            "id": "6003628789383"
+        },
+        "Theater": {
+            "id": "6002957026250"
+        },
+        "Stand-Up Comedy": {
+            "id": "6003273904571"
+        },
+        "Concerts": {
+            "id": "6002970406974"
+        },
+        "Festivals": {
+            "id": "6003108826384"
+        },
+        "Ballet": {
+            "id": "6003247127613"
+        }
+    },
+    "Sports and Fitness": {
+        "Running": {
+            "id": "6003397496347"
+        },
+        "Cycling": {
+            "id": "6003402532547"
+        },
+        "Swimming": {
+            "id": "6003166397215"
+        },
+        "Yoga": {
+            "id": "6003306084421"
+        },
+        "Skiing": {
+            "id": "6003324287371"
+        },
+        "Tennis": {
+            "id": "6003397425735"
+        },
+        "Table Tennis": {
+            "id": "6003267530336"
+        },
+        "Hiking": {
+            "id": "6003075996693"
+        },
+        "Martial Arts": {
+            "id": "6003142844668"
+        },
+        "Football": {
+            "id": "6003107902433"
+        },
+        "Handball": {
+            "id": "6003218286847"
+        },
+        "Basketball": {
+            "id": "6003369240775"
+        },
+        "Rowing": {
+            "id": "6003218188176"
+        },
+        "Marathon": {
+            "id": "6003424404140"
+        },
+        "Triathlon": {
+            "id": "6003351764757"
+        },
+        "Badminton": {
+            "id": "6003265014514"
+        },
+        "Volleyball": {
+            "id": "6002929380259"
+        },
+        "Ice Skating": {
+            "id": "6003648198346"
+        },
+        "Climbing": {
+            "id": "6003437568354"
+        },
+        "Archery": {
+            "id": "6003263063109"
+        }
+    },
+    "Outdoor and Adventure": {
+        "Camping": {
+            "id": "6003348662930"
+        },
+        "Fishing": {
+            "id": "6002979499920"
+        },
+        "Hunting": {
+            "id": "6003106813190"
+        },
+        "Mountain Biking": {
+            "id": "6003092330156"
+        },
+        "Rock Climbing": {
+            "id": "6003290283169"
+        },
+        "Sailing": {
+            "id": "6003187081552"
+        },
+        "Ski Touring": {
+            "id": "6003219479558"
+        },
+        "Kayaking": {
+            "id": "6003333948951"
+        },
+        "Surfing": {
+            "id": "6002984573619"
+        }
+    },
+    "Technology and Gadgets": {
+        "Computer Programming": {
+            "id": "6003030200185"
+        },
+        "Video Games": {
+            "id": "6003940339466"
+        },
+        "Robotics": {
+            "id": "6003222011876"
+        },
+        "3D Printing": {
+            "id": "6002933811373"
+        },
+        "Virtual Reality": {
+            "id": "6003337008757"
+        },
+        "Artificial Intelligence": {
+            "id": "6002898176962"
+        },
+        "Photography Equipment": {
+            "id": "6003325186571"
+        }
+    },
+    "Science and Education": {
+        "Astronomy": {
+            "id": "6003384251605"
+        },
+        "Biology": {
+            "id": "6003397496403"
+        },
+        "Chemistry": {
+            "id": "6003472575663"
+        },
+        "Physics": {
+            "id": "6003072295829"
+        },
+        "Psychology": {
+            "id": "6003224104145"
+        },
+        "Philosophy": {
+            "id": "6003082070797"
+        },
+        "History": {
+            "id": "6003249578667"
+        },
+        "Political Science": {
+            "id": "6003485754386"
+        },
+        "Engineering": {
+            "id": "6003252179711"
+        },
+        "Mathematics": {
+            "id": "6003308361514"
+        },
+        "Archaeology": {
+            "id": "6003344675130"
+        }
+    },
+    "Culinary Arts": {
+        "Cooking": {
+            "id": "6003659420716"
+        },
+        "Baking": {
+            "id": "6003134986700"
+        },
+        "Wine": {
+            "id": "6003148544265"
+        },
+        "Beer": {
+            "id": "6003012461997"
+        },
+        "Liqouor": {
+            "id": "6003146729229"
+        },
+        "BBQ": {
+            "id": "6003325965709"
+        },
+        "Steak": {
+            "id": "6003145957236"
+        },
+        "Seafood": {
+            "id": "6003240742699"
+        },
+        "Vegan and Vegetarian Cooking": {
+            "id": "6003641846820"
+        },
+        "Street Food": {
+            "id": "6003107610629"
+        },
+        "Cheese": {
+            "id": "6003185579408"
+        },
+        "Pizza": {
+            "id": "6003668857118"
+        },
+        "Pasta": {
+            "id": "6003289497538"
+        },
+        "Sushi": {
+            "id": "6003374311125"
+        },
+        "Pastry": {
+            "id": "6003142100447"
+        },
+        "Cake": {
+            "id": "6003305507369"
+        }
+    },
+    "Travel and Exploration": {
+        "Mountains": {
+            "id": "6003064649070"
+        },
+        "Lakes": {
+            "id": "6003430600057"
+        },
+        "Seaside": {
+            "id": "6003431193312"
+        },
+        "National Parks": {
+            "id": "6003029772007"
+        },
+        "Forests": {
+            "id": "6003041643573"
+        },
+        "Islands": {
+            "id": "6003436196370"
+        },
+        "Beaches": {
+            "id": "6003431201869"
+        }
+    }
+}

@@ -84,7 +84,6 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 server = app.server
 
-
 # Label mappings
 label_mapping = {
     'ticket_one_way_eur': 'Public Transport Price (One Way Ticket)',
@@ -204,14 +203,31 @@ app.layout = html.Div([
                     target='population-tooltip',
                     placement='right',
                 ),
-                html.P("From 0 to 20M+", style={'fontSize': '14px', 'marginTop': '5px'}),
-                dcc.RangeSlider(
-                    id='population-slider',
-                    min=0,
-                    max=11,
-                    marks={i: f'{i * 100}k' if i <= 5 else (f'{(i - 5) * 1}M' if i < 11 else '20M+') for i in range(12)},
-                    value=[0, 11],
-                    step=None
+                html.P("From 0 to 15M+", style={'fontSize': '14px', 'marginTop': '5px'}),
+                html.Div(
+                    dcc.RangeSlider(
+                        id='population-slider',
+                        min=0,
+                        max=10,
+                        marks={
+                            0: '0',
+                            1: '100k',
+                            2: '200k',
+                            3: '300k',
+                            4: '400k',
+                            5: '500k',
+                            6: '750k',
+                            7: '1M',
+                            8: '3M',
+                            9: '5M',
+                            10: '15M+'
+                        },
+                        value=[0, 10],
+                        step=None,
+                        allowCross=False,
+                        tooltip={"placement": "bottom", "always_visible": False}
+                    ),
+                    style={'width': '100%', 'margin': '0 auto'}  # Apply the style here
                 ),
             ], style={'marginBottom': '30px'}),
 
@@ -289,16 +305,17 @@ app.layout = html.Div([
                 ),
                 html.P("From 1 to 5, how important is minimizing Cost of Living to you?", style={'fontSize': '14px', 'marginTop': '5px'}),
                 html.Button('Add Variable', id='add-button', n_clicks=0,
-                            style={
-                                'marginTop': '10px',
-                                'marginBottom': '10px',
-                                'backgroundColor': '#007BFF',
-                                'color': 'white',
-                                'border': 'none',
-                                'padding': '8px 12px',
-                                'borderRadius': '4px',
-                                'cursor': 'pointer'
-                            }),
+                        style={
+                            'marginTop': '10px',
+                            'marginBottom': '10px',
+                            'backgroundColor': '#28a745',  # Changed to green
+                            'color': 'white',
+                            'border': 'none',
+                            'padding': '8px 12px',
+                            'borderRadius': '4px',
+                            'cursor': 'pointer'
+                        }),
+
                 html.Div(id='cost-variable-dropdowns', children=[]),
             ], style={'marginBottom': '30px', 'borderBottom': '1px solid #ccc', 'paddingBottom': '20px'}),
 
@@ -333,7 +350,7 @@ app.layout = html.Div([
                 html.Div(id='satisfaction-variable-dropdowns', children=[]),
             ], style={'marginBottom': '30px', 'borderBottom': '1px solid #ccc', 'paddingBottom': '20px'}),
 
-            # Personal Interests Section
+            # Personal Interests Section (Unified)
             html.Div([
                 html.H4("Personal Interests", style={'fontSize': '20px', 'fontWeight': 'bold'}),
                 html.Label([
@@ -345,7 +362,7 @@ app.layout = html.Div([
                     })
                 ], style={'fontSize': '16px', 'fontWeight': 'bold'}),
                 dbc.Tooltip(
-                    "Select categories you are interested in to find those cities with the highest amount of people interested in the same categories on Meta services.",
+                    "Select categories you are interested in to find those cities with the highest number of people interested in the same categories on Meta services.",
                     target='fb-tooltip',
                     placement='right',
                 ),
@@ -353,45 +370,30 @@ app.layout = html.Div([
                     dbc.DropdownMenu(
                         label=category,
                         children=[
-                            dbc.Checkbox(
-                                label=interest,
-                                id={'type': 'fb-interest-checkbox', 'id': interest},
-                                value=False,
+                            dbc.Checklist(
+                                options=[
+                                    {'label': interest, 'value': interest}
+                                    for interest in interests
+                                ],
+                                value=[],
+                                id={'type': 'fb-interests', 'index': category},
                                 style={'margin-left': '20px', 'margin-bottom': '5px'}
                             )
-                            for interest in interests
                         ],
                         direction='down',
-                        style={'marginBottom': '10px'}
+                        style={
+                            'marginBottom': '10px',
+                            'width': '250px',  # Set a fixed width to unify
+                        }
                     )
                     for category, interests in interest_categories.items()
                 ], style={
-                    'maxHeight': '300px',
-                    'overflowY': 'auto',
                     'padding': '10px',
                     'border': '1px solid #ccc',
                     'borderRadius': '5px',
                     'backgroundColor': '#fff'
                 }),
-            ], style={'marginBottom': '30px'}),
-
-            # Personal Interest Fit Section
-            html.Div([
-                html.H4("Personal Interest Fit", style={'fontSize': '20px', 'fontWeight': 'bold'}),
-                html.Label([
-                    "Personal Interest Fit Importance",
-                    html.I(className="fas fa-info-circle", id='social-fit-tooltip', style={
-                        'margin-left': '8px',
-                        'cursor': 'pointer',
-                        'color': '#007BFF'
-                    })
-                ], style={'fontSize': '16px', 'fontWeight': 'bold'}),
-                dbc.Tooltip(
-                    "Adjust the importance of social fit in the overall score.",
-                    target='social-fit-tooltip',
-                    placement='right',
-                ),
-                html.P("From 1 to 5, how important are communities with similar interests to you?", style={'fontSize': '14px', 'marginTop': '5px'}),
+                html.P("From 1 to 5, how important are communities with similar interests to you?", style={'fontSize': '14px', 'marginTop': '10px'}),
                 dcc.Slider(
                     id='social-fit-slider',
                     min=1, max=5, step=1, value=1,
@@ -451,7 +453,7 @@ app.layout = html.Div([
             ], style={'marginTop': '20px'}),
         ], style={
             'padding': '30px',
-            'width': '30%',
+            'width': '25%',
             'backgroundColor': '#f8f9fa',  # Slightly lighter grey for better contrast
             'boxSizing': 'border-box',
             'overflowY': 'auto',
@@ -467,22 +469,28 @@ app.layout = html.Div([
         # Main Panel on the Right
         html.Div([
             # Map Section
-            html.Div([
-                html.H4([
-                    "Map of Cities",
-                    html.I(className="fas fa-info-circle", id='map-tooltip', style={
-                        'margin-left': '8px',
-                        'cursor': 'pointer',
-                        'color': '#007BFF'
-                    })
-                ], style={'fontSize': '22px', 'fontWeight': 'bold'}),
-                dbc.Tooltip(
-                    "This map shows the cities based on your preferences. Hover over markers for more info.",
-                    target='map-tooltip',
-                    placement='right',
-                ),
-                dcc.Graph(id="city-map", style={'height': '600px'}, config={'scrollZoom': False}),
-            ], style={'padding': '20px', 'backgroundColor': '#fff', 'borderRadius': '5px', 'boxShadow': '0 0 10px rgba(0,0,0,0.1)'}),
+            # Map Section
+        html.Div([
+            html.H4([
+                "Map of Cities",
+                html.I(className="fas fa-info-circle", id='map-tooltip', style={
+                    'margin-left': '8px',
+                    'cursor': 'pointer',
+                    'color': '#007BFF'
+                })
+            ], style={'fontSize': '22px', 'fontWeight': 'bold'}),
+            dbc.Tooltip(
+                "This map shows the cities based on your preferences. Hover over markers for more info.",
+                target='map-tooltip',
+                placement='right',
+            ),
+            dcc.Graph(
+                id="city-map",
+                style={'height': '600px'},
+                config={'scrollZoom': False}  # Reverted to original configuration
+            ),
+        ], style={'padding': '20px', 'backgroundColor': '#fff', 'borderRadius': '5px', 'boxShadow': '0 0 10px rgba(0,0,0,0.1)'}),
+        
 
             html.Br(),
 
@@ -497,7 +505,7 @@ app.layout = html.Div([
                     })
                 ], style={'fontSize': '22px', 'fontWeight': 'bold'}),
                 dbc.Tooltip(
-                    "This table lists the top 20 cities ranked based on your selected preferences and weights.",
+                    "This table lists cities ranked based on your selected preferences and weights.",
                     target='ranking-tooltip',
                     placement='right',
                 ),
@@ -529,7 +537,9 @@ app.layout = html.Div([
                         'fontSize': '16px'
                     },
                     sort_action='native',
-                    page_size=20  # Display top 20 cities
+                    page_action='native',
+                    page_current=0,
+                    page_size=20  # Display 20 cities per page
                 )
             ], style={'padding': '20px', 'backgroundColor': '#fff', 'borderRadius': '5px', 'boxShadow': '0 0 10px rgba(0,0,0,0.1)'}),
         ], style={
@@ -546,6 +556,63 @@ app.layout = html.Div([
 ])
 
 
+# Population thresholds for the slider
+population_thresholds = [
+    0,
+    100_000,
+    200_000,
+    300_000,
+    400_000,
+    500_000,
+    750_000,
+    1_000_000,
+    3_000_000,
+    5_000_000,
+    15_000_000
+]
+
+@app.callback(
+    Output('country-dropdown', 'value'),
+    Input('country-dropdown', 'value')
+)
+def update_country_dropdown(selected_countries):
+    if selected_countries is None:
+        raise dash.exceptions.PreventUpdate
+    if 'All' in selected_countries and len(selected_countries) > 1:
+        selected_countries.remove('All')
+    elif not selected_countries:
+        selected_countries = ['All']
+    return selected_countries
+
+
+@app.callback(
+    Output({'type': 'dynamic-dropdown', 'index': ALL}, 'options'),
+    Input({'type': 'dynamic-dropdown', 'index': ALL}, 'value'),
+)
+def update_dynamic_dropdown_options(selected_values):
+    options = []
+    selected_vars = [v for v in selected_values if v is not None]
+    for i, v in enumerate(selected_values):
+        available_vars = [{'label': label_mapping[var], 'value': var}
+                          for var in cost_vars if var not in selected_vars or var == v]
+        options.append(available_vars)
+    return options
+
+
+@app.callback(
+    Output({'type': 'dynamic-satisfaction-dropdown', 'index': ALL}, 'options'),
+    Input({'type': 'dynamic-satisfaction-dropdown', 'index': ALL}, 'value'),
+)
+def update_satisfaction_dropdown_options(selected_values):
+    options = []
+    selected_vars = [v for v in selected_values if v is not None]
+    for i, v in enumerate(selected_values):
+        available_vars = [{'label': label_mapping[var], 'value': var}
+                          for var in satisfaction_vars if var not in selected_vars or var == v]
+        options.append(available_vars)
+    return options
+
+
 # Callback to update the city dropdown based on the selected country and population range
 @app.callback(
     Output('city-dropdown', 'options'),
@@ -553,8 +620,11 @@ app.layout = html.Div([
 )
 def update_city_dropdown(selected_countries, population_value):
     # Convert slider value into population ranges
-    population_min = 100_000 * population_value[0] if population_value[0] <= 5 else 1_000_000 * (population_value[0] - 5)
-    population_max = 100_000 * population_value[1] if population_value[1] <= 5 else 1_000_000 * (population_value[1] - 5)
+    def get_population_value(slider_value):
+        return population_thresholds[int(slider_value)]
+    
+    population_min = get_population_value(population_value[0])
+    population_max = get_population_value(population_value[1])
 
     # Filter cities based on selected countries and population range
     filtered_cities = cities[(cities['Population'] >= population_min) & (cities['Population'] <= population_max)]
@@ -651,8 +721,8 @@ def add_satisfaction_dropdown(n_clicks, children, selected_vars):
         Input('income-slider', 'value'),
         Input({'type': 'dynamic-satisfaction-dropdown', 'index': ALL}, 'value'),
         Input({'type': 'dynamic-satisfaction-slider', 'index': ALL}, 'value'),
-        Input({'type': 'fb-interest-checkbox', 'id': ALL}, 'value'),
-        State({'type': 'fb-interest-checkbox', 'id': ALL}, 'id'),
+        Input({'type': 'fb-interests', 'index': ALL}, 'value'),
+        State({'type': 'fb-interests', 'index': ALL}, 'id'),
         Input('social-fit-slider', 'value')
     ]
 )
@@ -663,13 +733,17 @@ def update_map(population_value, selected_countries, selected_cities,
                fb_interest_values, fb_interest_ids,
                social_fit_weight):
 
-    # Debug: Print selected FB interest values and IDs
-    print("Selected FB Interest Values:", fb_interest_values)
-    print("FB Interest IDs:", fb_interest_ids)
+    # Flatten the list of selected FB interests
+    selected_fb_interests = []
+    for interests in fb_interest_values:
+        selected_fb_interests.extend(interests)
 
     # Convert slider value into population ranges
-    population_min = 100_000 * population_value[0] if population_value[0] <= 5 else 1_000_000 * (population_value[0] - 5)
-    population_max = 100_000 * population_value[1] if population_value[1] <= 5 else 1_000_000 * (population_value[1] - 5)
+    def get_population_value(slider_value):
+        return population_thresholds[int(slider_value)]
+
+    population_min = get_population_value(population_value[0])
+    population_max = get_population_value(population_value[1])
 
     # Filter cities based on population range
     filtered_cities = cities[(cities['Population'] >= population_min) & (cities['Population'] <= population_max)].copy()
@@ -741,28 +815,30 @@ def update_map(population_value, selected_countries, selected_cities,
             weighted_scores.append(np.zeros((len(filtered_cities), 1)))
 
     # Process FB interest categories
-    selected_fb_interests = [fb_interest_ids[i]['id'] for i, val in enumerate(fb_interest_values) if val]
-    
-    # Debug: Print selected_fb_interests
-    print("Selected FB Interests:", selected_fb_interests)
-    
     if selected_fb_interests:
         fb_interest_columns = [col for col in selected_fb_interests if col in filtered_cities.columns]
         
-        # Debug: Print fb_interest_columns
-        print("FB Interest Columns in Data:", fb_interest_columns)
-        
         if fb_interest_columns:
-            # For scoring, sum the selected columns
-            filtered_cities['Social Fit'] = filtered_cities[fb_interest_columns].sum(axis=1)
-            # Normalize the 'Social Fit' score from 0 to 1
-            filtered_cities['Social Fit'] = scaler.fit_transform(filtered_cities[['Social Fit']])
-            # Multiply by the social fit weight
-            weighted_scores.append(filtered_cities[['Social Fit']] * social_fit_weight)
+            # Normalize each selected interest category
+            normalized_interest_scores = pd.DataFrame(index=filtered_cities.index)
+            for col in fb_interest_columns:
+                data = filtered_cities[[col]].astype(float)
+                normalized = scaler.fit_transform(data)
+                normalized_interest_scores[col] = normalized.flatten()
+            if not normalized_interest_scores.empty:
+                avg_normalized_score = normalized_interest_scores.mean(axis=1)
+                # Multiply by 100 to get percentage for display
+                interest_fit_display = pd.Series((avg_normalized_score * 100).round(2), index=filtered_cities.index)
+                filtered_cities['Interest Fit Display'] = interest_fit_display.astype(str) + '%'
+                # For scoring, use the average normalized score
+                avg_normalized_score = avg_normalized_score.values.reshape(-1, 1)
+                weighted_scores.append(avg_normalized_score * social_fit_weight)
+            else:
+                filtered_cities['Interest Fit Display'] = ''
         else:
-            filtered_cities['Social Fit'] = 0
+            filtered_cities['Interest Fit Display'] = ''
     else:
-        filtered_cities['Social Fit'] = 0
+        filtered_cities['Interest Fit Display'] = ''
 
     # Calculate final score only if there are any selected variables
     if weighted_scores:
@@ -839,12 +915,11 @@ def update_map(population_value, selected_countries, selected_cities,
         Input({'type': 'dynamic-dropdown', 'index': ALL}, 'value'),
         Input({'type': 'dynamic-satisfaction-dropdown', 'index': ALL}, 'value'),
         Input('income-dropdown', 'value'),
-        Input({'type': 'fb-interest-checkbox', 'id': ALL}, 'value'),
-        State({'type': 'fb-interest-checkbox', 'id': ALL}, 'id')
+        Input({'type': 'fb-interests', 'index': ALL}, 'value'),
     ]
 )
 def update_table_columns(selected_variables, selected_satisfaction_vars, income_variable,
-                         fb_interest_values, fb_interest_ids):
+                         fb_interest_values):
     base_columns = [
         {'name': 'Rank', 'id': 'Rank'},
         {'name': 'City', 'id': 'City'},
@@ -868,9 +943,11 @@ def update_table_columns(selected_variables, selected_satisfaction_vars, income_
             variable_columns.append({'name': display_name, 'id': var})
     
     # Determine if any FB interest categories are selected
-    selected_fb_interests = [fb_interest_ids[i]['id'] for i, val in enumerate(fb_interest_values) if val]
+    selected_fb_interests = []
+    for interests in fb_interest_values:
+        selected_fb_interests.extend(interests)
     if selected_fb_interests:
-        variable_columns.append({'name': 'Social Fit', 'id': 'Social Fit Display'})
+        variable_columns.append({'name': 'Interest Fit', 'id': 'Interest Fit Display'})
 
     return base_columns + variable_columns
 
@@ -888,8 +965,8 @@ def update_table_columns(selected_variables, selected_satisfaction_vars, income_
         Input('income-slider', 'value'),
         Input({'type': 'dynamic-satisfaction-dropdown', 'index': ALL}, 'value'),
         Input({'type': 'dynamic-satisfaction-slider', 'index': ALL}, 'value'),
-        Input({'type': 'fb-interest-checkbox', 'id': ALL}, 'value'),
-        State({'type': 'fb-interest-checkbox', 'id': ALL}, 'id'),
+        Input({'type': 'fb-interests', 'index': ALL}, 'value'),
+        State({'type': 'fb-interests', 'index': ALL}, 'id'),
         Input('social-fit-slider', 'value')
     ]
 )
@@ -900,13 +977,17 @@ def update_ranking_table(population_value, selected_countries, selected_cities,
                          fb_interest_values, fb_interest_ids,
                          social_fit_weight):
 
-    # Debug: Print selected FB interest values and IDs
-    print("Selected FB Interest Values:", fb_interest_values)
-    print("FB Interest IDs:", fb_interest_ids)
+    # Flatten the list of selected FB interests
+    selected_fb_interests = []
+    for interests in fb_interest_values:
+        selected_fb_interests.extend(interests)
 
     # Convert slider value into population ranges
-    population_min = 100_000 * population_value[0] if population_value[0] <= 5 else 1_000_000 * (population_value[0] - 5)
-    population_max = 100_000 * population_value[1] if population_value[1] <= 5 else 1_000_000 * (population_value[1] - 5)
+    def get_population_value(slider_value):
+        return population_thresholds[int(slider_value)]
+
+    population_min = get_population_value(population_value[0])
+    population_max = get_population_value(population_value[1])
 
     # Filter cities based on population range
     filtered_cities = cities[(cities['Population'] >= population_min) & (cities['Population'] <= population_max)]
@@ -978,28 +1059,30 @@ def update_ranking_table(population_value, selected_countries, selected_cities,
             weighted_scores.append(np.zeros((len(filtered_cities), 1)))
 
     # Process FB interest categories
-    selected_fb_interests = [fb_interest_ids[i]['id'] for i, val in enumerate(fb_interest_values) if val]
-    
-    # Debug: Print selected_fb_interests
-    print("Selected FB Interests:", selected_fb_interests)
-    
     if selected_fb_interests:
         fb_interest_columns = [col for col in selected_fb_interests if col in filtered_cities.columns]
         
-        # Debug: Print fb_interest_columns
-        print("FB Interest Columns in Data:", fb_interest_columns)
-        
         if fb_interest_columns:
-            # For scoring, sum the selected columns
-            filtered_cities['Social Fit'] = filtered_cities[fb_interest_columns].sum(axis=1)
-            # Normalize the 'Social Fit' score from 0 to 1
-            filtered_cities['Social Fit'] = scaler.fit_transform(filtered_cities[['Social Fit']])
-            # Multiply by the social fit weight
-            weighted_scores.append(filtered_cities[['Social Fit']] * social_fit_weight)
+            # Normalize each selected interest category
+            normalized_interest_scores = pd.DataFrame(index=filtered_cities.index)
+            for col in fb_interest_columns:
+                data = filtered_cities[[col]].astype(float)
+                normalized = scaler.fit_transform(data)
+                normalized_interest_scores[col] = normalized.flatten()
+            if not normalized_interest_scores.empty:
+                avg_normalized_score = normalized_interest_scores.mean(axis=1)
+                # Multiply by 100 to get percentage for display
+                interest_fit_display = pd.Series((avg_normalized_score * 100).round(2), index=filtered_cities.index)
+                filtered_cities['Interest Fit Display'] = interest_fit_display.astype(str) + '%'
+                # For scoring, use the average normalized score
+                avg_normalized_score = avg_normalized_score.values.reshape(-1, 1)
+                weighted_scores.append(avg_normalized_score * social_fit_weight)
+            else:
+                filtered_cities['Interest Fit Display'] = ''
         else:
-            filtered_cities['Social Fit'] = 0
+            filtered_cities['Interest Fit Display'] = ''
     else:
-        filtered_cities['Social Fit'] = 0
+        filtered_cities['Interest Fit Display'] = ''
 
     # Calculate final score only if there are any selected variables
     if weighted_scores:
@@ -1024,8 +1107,8 @@ def update_ranking_table(population_value, selected_countries, selected_cities,
 
     # Combine original values with scores and rank
     columns_to_include = selected_cost_vars + selected_satisfaction_vars
-    if 'Social Fit Display' in filtered_cities.columns:
-        columns_to_include.append('Social Fit Display')
+    if 'Interest Fit Display' in filtered_cities.columns:
+        columns_to_include.append('Interest Fit Display')
 
     # Create a copy for ranking to avoid SettingWithCopyWarning
     ranked_cities = filtered_cities[['City', 'Country Name', 'Score']].copy()
@@ -1045,22 +1128,20 @@ def update_ranking_table(population_value, selected_countries, selected_cities,
             display_name = label_mapping.get(var, var)
             ranked_cities[display_name] = filtered_cities[var + '_label']
 
-    # Add Social Fit Display if applicable
-    if 'Social Fit Display' in filtered_cities.columns:
-        ranked_cities['Social Fit Display'] = filtered_cities['Social Fit Display']
+    # Add Interest Fit Display if applicable
+    if 'Interest Fit Display' in filtered_cities.columns:
+        ranked_cities['Interest Fit Display'] = filtered_cities['Interest Fit Display']
 
     # Add Rank based on Score
     ranked_cities['Rank'] = ranked_cities['Score'].rank(method='min', ascending=False)
-    ranked_cities = ranked_cities.sort_values(by='Rank').head(20)  # Ensure top 20
-
-    # No need to format net_salary_avg_eur again, as it's already handled above
+    ranked_cities = ranked_cities.sort_values(by='Rank')  # No longer limit to top 20
 
     # Return the ranked cities for the table
     return ranked_cities[['Rank', 'City', 'Country Name', 'Score'] + 
                         [var for var in selected_cost_vars if var != 'net_salary_avg_eur'] + 
                         ([income_variable] if income_variable else []) + 
                         [label_mapping.get(var, var) for var in selected_satisfaction_vars] + 
-                        (['Social Fit Display'] if 'Social Fit Display' in ranked_cities.columns else [])].to_dict('records')
+                        (['Interest Fit Display'] if 'Interest Fit Display' in ranked_cities.columns else [])].to_dict('records')
 
 
 # Client-Side Callback to Reload the Page on Reset Button Click
@@ -1076,6 +1157,7 @@ app.clientside_callback(
     Output('url', 'href'),
     Input('reset-button', 'n_clicks')
 )
+
 
 
 # Run the app

@@ -134,16 +134,18 @@ satisfaction_vars = {
 }
 label_mapping.update(satisfaction_vars) 
 
-
 # Layout
 app.layout = html.Div([
     # Location component for client-side callbacks
     dcc.Location(id='url', refresh=True),
     
+    # Add the Store Component to Keep Track of the Current View
+    dcc.Store(id='page-view', data='main'),
+    
     # Title Section with Background Color
     html.Div([
         html.H1(
-            "Personalized European City Comparison Tool",
+            "European City Comparison Tool",
             style={
                 'textAlign': 'center',
                 'fontSize': '36px',
@@ -167,11 +169,41 @@ app.layout = html.Div([
                 'fontSize': '16px',
                 'margin': '0 20px'
             }
-        )
+        ),
+        # Add the "About" Button Below the Paragraph
+        html.Div([
+            html.Button(
+                "About This Tool",
+                id='about-button',
+                n_clicks=0,
+                style={
+                    'display': 'block',
+                    'margin': '20px auto',
+                    'padding': '10px 20px',
+                    'fontSize': '18px',
+                    'backgroundColor': '#007BFF',
+                    'color': 'white',
+                    'border': 'none',
+                    'borderRadius': '5px',
+                    'cursor': 'pointer'
+                }
+            )
+        ]),
+        # Add the About Content Div Below the Title Section
+        html.Div([
+            html.Div(id='about-content', children=[], style={
+                'display': 'none',  # Initially hidden
+                'padding': '20px',
+                'backgroundColor': '#fff',
+                'borderRadius': '5px',
+                'boxShadow': '0 0 10px rgba(0,0,0,0.1)',
+                'marginTop': '20px'
+            })
+        ])
     ], style={
         'backgroundColor': '#e6f7ff',
         'padding': '20px 0',
-        'marginLeft': '30%',  # Offset to prevent overlap with the sidebar
+        'marginLeft': '30%',  
         'borderBottom': '2px solid #ccc'
     }),
 
@@ -249,10 +281,35 @@ app.layout = html.Div([
                 ),
                 dcc.Dropdown(
                     id='country-dropdown',
-                    options=[{'label': 'All Countries', 'value': 'All'}] + [{'label': country, 'value': country} for country in cities['Country Name'].unique()],
+                    options=[{'label': 'All Countries', 'value': 'All'}] + [{'label': country, 'value': country} for country in sorted(cities['Country Name'].unique())],
                     value=['All'],  # Default to 'All Countries'
                     multi=True,
                     placeholder="Select Country"
+                ),
+            ], style={'marginBottom': '30px'}),
+
+            # City Filter Section
+            html.Div([
+                html.H4("City Selection", style={'fontSize': '20px', 'fontWeight': 'bold'}),
+                html.Label([
+                    'Filter by City',
+                    html.I(className="fas fa-info-circle", id='city-tooltip', style={
+                        'margin-left': '8px',
+                        'cursor': 'pointer',
+                        'color': '#007BFF'
+                    })
+                ], style={'fontSize': '16px', 'fontWeight': 'bold'}),
+                dbc.Tooltip(
+                    "Select specific cities to focus your comparison.",
+                    target='city-tooltip',
+                    placement='right',
+                ),
+                dcc.Dropdown(
+                    id='city-dropdown',
+                    options=[],
+                    value=None,
+                    multi=True,
+                    placeholder="Select City"
                 ),
             ], style={'marginBottom': '30px'}),
 
@@ -276,7 +333,7 @@ app.layout = html.Div([
                 dcc.Dropdown(
                     id='income-dropdown',
                     options=[{'label': label_mapping['net_salary_avg_eur'], 'value': 'net_salary_avg_eur'}],
-                    value=None,  # Do not select by default
+                    value=None,  
                     placeholder="Select Income Variable"
                 ),
                 dcc.Slider(
@@ -402,31 +459,6 @@ app.layout = html.Div([
                 ),
             ], style={'marginBottom': '30px'}),
 
-            # City Filter Section (Moved to the Bottom)
-            html.Div([
-                html.H4("City Selection", style={'fontSize': '20px', 'fontWeight': 'bold'}),
-                html.Label([
-                    'Filter by City',
-                    html.I(className="fas fa-info-circle", id='city-tooltip', style={
-                        'margin-left': '8px',
-                        'cursor': 'pointer',
-                        'color': '#007BFF'
-                    })
-                ], style={'fontSize': '16px', 'fontWeight': 'bold'}),
-                dbc.Tooltip(
-                    "Select specific cities to focus your comparison.",
-                    target='city-tooltip',
-                    placement='right',
-                ),
-                dcc.Dropdown(
-                    id='city-dropdown',
-                    options=[],
-                    value=None,
-                    multi=True,
-                    placeholder="Select City"
-                ),
-            ], style={'marginBottom': '40px'}),
-
             html.Br(),
             html.Br(),
             html.Br(),
@@ -469,28 +501,26 @@ app.layout = html.Div([
         # Main Panel on the Right
         html.Div([
             # Map Section
-            # Map Section
-        html.Div([
-            html.H4([
-                "Map of Cities",
-                html.I(className="fas fa-info-circle", id='map-tooltip', style={
-                    'margin-left': '8px',
-                    'cursor': 'pointer',
-                    'color': '#007BFF'
-                })
-            ], style={'fontSize': '22px', 'fontWeight': 'bold'}),
-            dbc.Tooltip(
-                "This map shows the cities based on your preferences. Hover over markers for more info.",
-                target='map-tooltip',
-                placement='right',
-            ),
-            dcc.Graph(
-                id="city-map",
-                style={'height': '600px'},
-                config={'scrollZoom': False}  # Reverted to original configuration
-            ),
-        ], style={'padding': '20px', 'backgroundColor': '#fff', 'borderRadius': '5px', 'boxShadow': '0 0 10px rgba(0,0,0,0.1)'}),
-        
+            html.Div([
+                html.H4([
+                    "Map of Cities",
+                    html.I(className="fas fa-info-circle", id='map-tooltip', style={
+                        'margin-left': '8px',
+                        'cursor': 'pointer',
+                        'color': '#007BFF'
+                    })
+                ], style={'fontSize': '22px', 'fontWeight': 'bold'}),
+                dbc.Tooltip(
+                    "This map shows the cities based on your preferences. Hover over markers for more info.",
+                    target='map-tooltip',
+                    placement='right',
+                ),
+                dcc.Graph(
+                    id="city-map",
+                    style={'height': '600px'},
+                    config={'scrollZoom': False}  # Reverted to original configuration
+                ),
+            ], style={'padding': '20px', 'backgroundColor': '#fff', 'borderRadius': '5px', 'boxShadow': '0 0 10px rgba(0,0,0,0.1)'}),
 
             html.Br(),
 
@@ -540,21 +570,20 @@ app.layout = html.Div([
                     page_action='native',
                     page_current=0,
                     page_size=20  # Display 20 cities per page
-                )
+                ),
             ], style={'padding': '20px', 'backgroundColor': '#fff', 'borderRadius': '5px', 'boxShadow': '0 0 10px rgba(0,0,0,0.1)'}),
         ], style={
-            'marginLeft': '30%',  # Offset to match the sidebar
-            'width': '70%',       # Occupy the remaining width
+            'marginLeft': '25%',  # Offset to match the sidebar
+            'width': '75%',       # Occupy the remaining width
             'padding': '30px',
             'backgroundColor': '#f1f3f5',  # Light blue-grey background for the main content
             'boxSizing': 'border-box'
         }),
     ], style={'display': 'flex', 'flexDirection': 'row'}),
 
-    # Hidden div to trigger page reload
+    # Hidden div to trigger page reload and scrolling
     html.Div(id='dummy-output', style={'display': 'none'})
 ])
-
 
 # Population thresholds for the slider
 population_thresholds = [
@@ -584,7 +613,6 @@ def update_country_dropdown(selected_countries):
         selected_countries = ['All']
     return selected_countries
 
-
 @app.callback(
     Output({'type': 'dynamic-dropdown', 'index': ALL}, 'options'),
     Input({'type': 'dynamic-dropdown', 'index': ALL}, 'value'),
@@ -598,7 +626,6 @@ def update_dynamic_dropdown_options(selected_values):
         options.append(available_vars)
     return options
 
-
 @app.callback(
     Output({'type': 'dynamic-satisfaction-dropdown', 'index': ALL}, 'options'),
     Input({'type': 'dynamic-satisfaction-dropdown', 'index': ALL}, 'value'),
@@ -611,7 +638,6 @@ def update_satisfaction_dropdown_options(selected_values):
                           for var in satisfaction_vars if var not in selected_vars or var == v]
         options.append(available_vars)
     return options
-
 
 # Callback to update the city dropdown based on the selected country and population range
 @app.callback(
@@ -633,7 +659,6 @@ def update_city_dropdown(selected_countries, population_value):
         filtered_cities = filtered_cities[filtered_cities['Country Name'].isin(selected_countries)]
 
     return [{'label': city, 'value': city} for city in filtered_cities['City']]
-
 
 # Callback to dynamically add cost variable dropdowns and sliders
 @app.callback(
@@ -671,7 +696,6 @@ def add_cost_dropdown(n_clicks, children, selected_vars):
     children.append(new_element)
     return children
 
-
 # Callback to dynamically add satisfaction variable dropdowns and sliders
 @app.callback(
     Output('satisfaction-variable-dropdowns', 'children'),
@@ -707,7 +731,6 @@ def add_satisfaction_dropdown(n_clicks, children, selected_vars):
     # Add the new dropdown and slider to the list of children
     children.append(new_element)
     return children
-
 
 @app.callback(
     Output("city-map", "figure"),
@@ -886,7 +909,7 @@ def update_map(population_value, selected_countries, selected_cities,
         hovertemplate=(
             "<b>%{hovertext}</b><br>" +
             "Country Name: %{customdata[0]}<br>" +
-            "Population: %{customdata[1]}<br>" +
+            "Population: %{customdata[1]:,}<br>" +
             "Score: %{customdata[2]}<extra></extra>"
         ),
         showlegend=False
@@ -1089,7 +1112,8 @@ def update_ranking_table(population_value, selected_countries, selected_cities,
         total_weighted_scores = np.sum(weighted_scores, axis=0)
         # Sum across all variables to get a single score per city
         filtered_cities['Score'] = total_weighted_scores.sum(axis=1)
-        filtered_cities['Score'] = filtered_cities['Score'].round(3)
+        # Round Score to two decimal places
+        filtered_cities['Score'] = filtered_cities['Score'].round(2)
     else:
         filtered_cities['Score'] = 0  # Set score to 0 if no variables are selected
 
@@ -1102,7 +1126,7 @@ def update_ranking_table(population_value, selected_countries, selected_cities,
             filtered_cities[var + '_label'] = pd.cut(
                 filtered_cities[var],
                 bins=[-np.inf, quartiles[0], quartiles[1], quartiles[2], np.inf],
-                labels=["bad", "medium", "good", "very good"]
+                labels=["Bad", "Medium", "Good", "Very Good"]
             )
 
     # Combine original values with scores and rank
@@ -1113,14 +1137,11 @@ def update_ranking_table(population_value, selected_countries, selected_cities,
     # Create a copy for ranking to avoid SettingWithCopyWarning
     ranked_cities = filtered_cities[['City', 'Country Name', 'Score']].copy()
 
-    # Add selected cost of living variables
+    # Add selected cost of living variables with "€" appended
     for var in selected_cost_vars:
         if var in filtered_cities.columns:
-            if var == 'net_salary_avg_eur':
-                # Keep it as numerical
-                ranked_cities[var] = filtered_cities[var]
-            else:
-                ranked_cities[var] = filtered_cities[var].apply(lambda x: f"{x:.2f}€")
+            # Round to two decimal places and format with '€'
+            ranked_cities[var] = filtered_cities[var].round(2).apply(lambda x: f"{x:.2f}€")
 
     # Add selected satisfaction variables with labels
     for var in selected_satisfaction_vars:
@@ -1144,6 +1165,143 @@ def update_ranking_table(population_value, selected_countries, selected_cities,
                         (['Interest Fit Display'] if 'Interest Fit Display' in ranked_cities.columns else [])].to_dict('records')
 
 
+
+
+# Callback to toggle the About Content
+@app.callback(
+    [Output('about-content', 'children'),
+     Output('about-content', 'style')],
+    Input('about-button', 'n_clicks'),
+    State('about-content', 'children'),
+    prevent_initial_call=True
+)
+def toggle_about(n_clicks, current_children):
+    if n_clicks is None or n_clicks == 0:
+        # If the button hasn't been clicked, keep the Div hidden
+        return "", {'display': 'none'}
+    elif n_clicks % 2 == 1:
+        # On odd clicks, display the About content
+        about_text = [
+            html.H2("About This Tool", style={'textAlign': 'center', 'color': '#2c3e50'}),
+            
+            # Purpose and Overview
+            html.H4("Purpose and Overview", style={'marginTop': '20px', 'color': '#34495e'}),
+            html.P(
+                "The European City Comparison Tool is designed to help users find their ideal European city based on personalized preferences. "
+                "By adjusting various filters and weights, users can prioritize factors such as cost of living, income, urban satisfaction metrics, and social interests to generate a tailored ranking of cities."
+            ),
+            
+            # Data Sources
+            html.H4("Data Sources", style={'marginTop': '20px', 'color': '#34495e'}),
+            html.Ul([
+                html.Li([
+                    html.Strong("Numbeo.com: "),
+                    "Provides objective cost-of-living parameters including rent prices, utilities, transportation costs, and average net salaries. These data correspond to the 'Income Variable' and 'Cost of Living Variables' in the settings panel."
+                ]),
+                html.Li([
+                    html.Strong("Eurostat's Urban Audit: "),
+                    "Offers subjective quality of life measures based on resident satisfaction surveys covering various urban services and amenities. These metrics are linked to the 'Urban Livability Variables' in the settings panel."
+                ]),
+                html.Li([
+                    html.Strong("Facebook Marketing API: "),
+                    "Supplies social media interest data, allowing analysis of residents' personal interests and community dynamics. These interests are utilized in the 'Personal Interests' section of the settings panel."
+                ]),
+            ]),
+            
+            # Data Normalization
+            html.H4("Data Normalization", style={'marginTop': '20px', 'color': '#34495e'}),
+            html.P(
+                "To ensure comparability across different data sources and scales, all variables undergo a normalization process using Min-Max scaling. "
+                "This transformation scales each variable to a range between 0 and 1, allowing for meaningful aggregation and comparison. "
+                "For cost-related metrics where lower values are preferable (e.g., rent prices), the scale is inverted so that lower costs correspond to higher scores."
+            ),
+            
+            # Scoring Methodology
+            html.H4("Scoring Methodology", style={'marginTop': '20px', 'color': '#34495e'}),
+            html.P(
+                "The scoring system aggregates multiple Quality of Life (QoL) parameters into a single score for each city based on user preferences. Here's how it works:"
+            ),
+            html.Ol([
+                html.Li([
+                    html.Strong("Selection of Parameters: "),
+                    "Users select various QoL factors such as countries, cities, income variables, cost of living factors, urban livability metrics, and personal interests from the sidebar settings."
+                ]),
+                html.Li([
+                    html.Strong("Assigning Weights: "),
+                    "Each selected parameter can be assigned a weight between 1 (least important) and 5 (most important) to reflect its significance to the user."
+                ]),
+                html.Li([
+                    html.Strong("Weighted Aggregation: "),
+                    "Each parameter's normalized score is multiplied by its assigned weight. The sum of these weighted scores results in an overall QoL score for the city."
+                ]),
+                html.Li([
+                    html.Strong("Interest Fit Score: "),
+                    "Social interests are analyzed using the Facebook Marketing API to determine the proportion of residents interested in specific categories. These interest fit scores are averaged and weighted to produce an 'Interest Fit' percentage, indicating how well a city's social profile matches the user's preferences."
+                ]),
+            ]),
+            
+            # Social Interests Detailed Explanation
+            html.H4("Understanding Social Interests", style={'marginTop': '20px', 'color': '#34495e'}),
+            html.P(
+                "Social interests refer to the personal and cultural preferences of a city's residents, such as hobbies, activities, and areas of passion. These interests are measured using the Facebook Marketing API, which estimates the number of Facebook users in each city interested in predefined categories."
+            ),
+            html.P(
+                "Here's how social interests are integrated into the tool:"
+            ),
+            html.Ul([
+                html.Li([
+                    html.Strong("Data Collection: "),
+                    "The Facebook Marketing API collects aggregated and anonymized data on user interests based on their online interactions, likes, shares, and content engagement within specific geographic regions."
+                ]),
+                html.Li([
+                    html.Strong("Normalization: "),
+                    "Interest data for each city is normalized to account for differences in city populations and Facebook user bases. This ensures that interest proportions are comparable across cities of varying sizes."
+                ]),
+                html.Li([
+                    html.Strong("Scoring: "),
+                    "Normalized interest scores are averaged and weighted according to user-defined preferences, contributing to the overall QoL score. This allows the tool to reflect not only economic and infrastructural factors but also the cultural and social fabric that enhances urban living."
+                ]),
+            ]),
+            
+            # Visual Enhancements
+            html.H4("Visual Enhancements", style={'marginTop': '20px', 'color': '#34495e'}),
+            html.P(
+                "The tool features an intuitive and clean design, with a fixed sidebar for easy access to filters and preferences. Interactive elements like color-coded maps and sortable tables facilitate quick and meaningful comparisons between cities."
+            ),
+        ]
+        return about_text, {
+            'display': 'block',
+            'padding': '30px',
+            'backgroundColor': '#f9f9f9',
+            'borderRadius': '8px',
+            'boxShadow': '0 4px 8px rgba(0,0,0,0.1)',
+            'marginTop': '20px',
+            'fontFamily': 'Arial, sans-serif'
+        }
+    else:
+        # On even clicks, hide the About content
+        return "", {'display': 'none'}
+
+
+
+# Client-Side Callback to Scroll to the About Section
+app.clientside_callback(
+    """
+    function(n_clicks) {
+        if (n_clicks && n_clicks % 2 === 1) {
+            var element = document.getElementById('about-content');
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+        return "";
+    }
+    """,
+    Output('dummy-output', 'children'),  # Dummy output to satisfy the callback
+    Input('about-button', 'n_clicks')
+)
+
+
 # Client-Side Callback to Reload the Page on Reset Button Click
 app.clientside_callback(
     """
@@ -1157,6 +1315,7 @@ app.clientside_callback(
     Output('url', 'href'),
     Input('reset-button', 'n_clicks')
 )
+
 
 
 

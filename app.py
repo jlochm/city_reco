@@ -1263,11 +1263,7 @@ def toggle_about(n_clicks, current_children):
                 ]),
             ]),
             
-            # Visual Enhancements
-            html.H4("Visual Enhancements", style={'marginTop': '20px', 'color': '#34495e'}),
-            html.P(
-                "The tool features an intuitive and clean design, with a fixed sidebar for easy access to filters and preferences. Interactive elements like color-coded maps and sortable tables facilitate quick and meaningful comparisons between cities."
-            ),
+
         ]
         return about_text, {
             'display': 'block',
